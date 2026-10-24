@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Spring AI Ollama Lab</title>
+  <style>
+    :root {
+      --ink: #1c1915;
+      --muted: #5c564c;
+      --paper: #f6f1e7;
+      --card: #fffdf8;
+      --line: #e4d9c8;
+      --accent: #0f6e56;
+      --accent-ink: #ffffff;
+      --warn: #8a4b08;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: var(--paper);
+      line-height: 1.5;
+    }
+    header {
+      padding: 2rem 1.25rem 1rem;
+      max-width: 920px;
+      margin: 0 auto;
+    }
+    h1 { font-size: 1.8rem; margin: 0 0 0.4rem; letter-spacing: -0.02em; }
+    h2 { font-size: 1.05rem; margin: 0 0 0.35rem; }
+    p { margin: 0.3rem 0; }
+    .lede { color: var(--muted); max-width: 42rem; }
+    .status { margin-top: 0.8rem; font-size: 0.92rem; }
+    .status.ok { color: var(--accent); }
+    .status.bad { color: var(--warn); }
+    main {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 0 1.25rem 3rem;
+      display: grid;
+      gap: 1rem;
+    }
+    article {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 1rem 1rem 1.1rem;
+    }
+    .lesson {
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.2rem;
+    }
+    label { display: block; font-size: 0.85rem; margin: 0.7rem 0 0.25rem; color: var(--muted); }
+    input, select, textarea {
+      width: 100%;
+      font: inherit;
+      padding: 0.55rem 0.65rem;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ink);
+    }
+    textarea { min-height: 4.5rem; resize: vertical; }
+    .row { display: flex; gap: 0.6rem; align-items: end; flex-wrap: wrap; }
+    .row > * { flex: 1; }
+    button {
+      margin-top: 0.75rem;
+      background: var(--accent);
+      color: var(--accent-ink);
+      border: 0;
+      border-radius: 8px;
+      padding: 0.55rem 0.9rem;
+      font: inherit;
+      cursor: pointer;
+    }
+    button:disabled { opacity: 0.6; cursor: progress; }
+    pre {
+      margin: 0.8rem 0 0;
+      padding: 0.8rem;
+      background: #221f1b;
+      color: #f4efe6;
+      border-radius: 8px;
+      white-space: pre-wrap;
+      min-height: 2.5rem;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.92rem;
+    }
+    code { font-family: Consolas, "Courier New", monospace; font-size: 0.9em; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Spring AI Ollama Lab</h1>
+    <p class="lede">Six small calls against Ollama on this machine. The model is <code>qwen3:4b</code>. The first reply can take half a minute while Ollama loads it into memory.</p>
+    <p id="status" class="status">Checking Ollama…</p>
+  </header>
+  <main>
+    <article>
+      <div class="lesson">Lesson 1 · ChatClient</div>
+      <h2>Ask a question</h2>
+      <p><code>GET /api/chat</code> sends your text as the user message and returns the reply.</p>
+      <label for="chat">Message</label>
+      <textarea id="chat">What is dependency injection in one paragraph?</textarea>
+      <button data-run="chat">Run</button>
+      <pre id="chat-out">Response appears here.</pre>
+    </article>
+
+    <article>
+      <div class="lesson">Lesson 2 · Prompt template</div>
+      <h2>Fill in a template</h2>
+      <p><code>GET /api/explain</code> keeps the wording in Java and only substitutes <code>{topic}</code> and <code>{level}</code>.</p>
+      <div class="row">
+        <div>
+          <label for="topic">Topic</label>
+          <input id="topic" value="a Spring bean">
+        </div>
+        <div>
+          <label for="level">Level</label>
+          <select id="level">
+            <option>beginner</option>
+            <option>intermediate</option>
+          </select>
+        </div>
+      </div>
+      <button data-run="explain">Run</button>
+      <pre id="explain-out">Response appears here.</pre>
+    </article>
+
+    <article>
+      <div class="lesson">Lesson 3 · Structured output</div>
+      <h2>Map the reply onto a record</h2>
+      <p><code>GET /api/study-tip</code> returns a <code>StudyTip</code> with <code>title</code>, <code>steps</code>, and <code>whyItMatters</code>.</p>
+      <label for="tip">Topic</label>
+      <input id="tip" value="reading a stack trace">
+      <button data-run="tip">Run</button>
+      <pre id="tip-out">Response appears here.</pre>
+    </article>
+
+    <article>
+      <div class="lesson">Lesson 4 · Streaming</div>
+      <h2>Watch tokens arrive</h2>
+      <p><code>GET /api/stream</code> uses server-sent events. The page appends each chunk as it arrives.</p>
+      <label for="stream">Message</label>
+      <textarea id="stream">List five things a Spring Boot app does at startup.</textarea>
+      <button data-run="stream">Run</button>
+      <pre id="stream-out">Response appears here.</pre>
+    </article>
+
+    <article>
+      <div class="lesson">Lesson 5 · Tools</div>
+      <h2>Let the model call Java</h2>
+      <p><code>GET /api/assistant</code> can use the date, addition, and glossary methods in <code>StudyTools</code>.</p>
+      <label for="tool">Message</label>
+      <textarea id="tool">What time is it, what is 17 + 25, and what is a bean?</textarea>
+      <button data-run="tool">Run</button>
+      <pre id="tool-out">Response appears here.</pre>
+    </article>
+
+    <article>
+      <div class="lesson">Lesson 6 · Chat memory</div>
+      <h2>Keep a conversation</h2>
+      <p><code>GET /api/memory</code> stores messages for a conversation id. Tell it your name, then ask it to repeat that name.</p>
+      <label for="memory-id">Conversation id</label>
+      <input id="memory-id" value="study-session">
+      <label for="memory">Message</label>
+      <textarea id="memory">My name is Alex and I am learning Spring.</textarea>
+      <button data-run="memory">Run</button>
+      <pre id="memory-out">Response appears here.</pre>
+    </article>
+  </main>
+  <script>
+    const status = document.getElementById("status");
+    fetch("http://localhost:11434/api/tags")
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(data => {
+        const names = (data.models || []).map(m => m.name).join(", ") || "none";
+        status.textContent = "Ollama is running. Models: " + names;
+        status.className = "status ok";
+      })
+      .catch(() => {
+        status.textContent = "Ollama is not reachable at http://localhost:11434. Start the Ollama app, then refresh.";
+        status.className = "status bad";
+      });
+
+    async function runJson(url, outId, button) {
+      const out = document.getElementById(outId);
+      button.disabled = true;
+      out.textContent = "Waiting for the model…";
+      try {
+        const response = await fetch(url);
+        const text = await response.text();
+        if (!response.ok) {
+          out.textContent = response.status + " " + text;
+          return;
+        }
+        try {
+          out.textContent = JSON.stringify(JSON.parse(text), null, 2);
+        } catch {
+          out.textContent = text;
+        }
+      } catch (error) {
+        out.textContent = String(error);
+      } finally {
+        button.disabled = false;
+      }
+    }
+
+    document.querySelector('[data-run="chat"]').onclick = (event) => {
+      const message = document.getElementById("chat").value;
+      runJson("/api/chat?message=" + encodeURIComponent(message), "chat-out", event.target);
+    };
+    document.querySelector('[data-run="explain"]').onclick = (event) => {
+      const topic = document.getElementById("topic").value;
+      const level = document.getElementById("level").value;
+      runJson("/api/explain?topic=" + encodeURIComponent(topic) + "&level=" + encodeURIComponent(level), "explain-out", event.target);
+    };
+    document.querySelector('[data-run="tip"]').onclick = (event) => {
+      const topic = document.getElementById("tip").value;
+      runJson("/api/study-tip?topic=" + encodeURIComponent(topic), "tip-out", event.target);
+    };
+    document.querySelector('[data-run="tool"]').onclick = (event) => {
+      const message = document.getElementById("tool").value;
+      runJson("/api/assistant?message=" + encodeURIComponent(message), "tool-out", event.target);
+    };
+    document.querySelector('[data-run="memory"]').onclick = (event) => {
+      const message = document.getElementById("memory").value;
+      const id = document.getElementById("memory-id").value;
+      runJson("/api/memory?message=" + encodeURIComponent(message) + "&conversationId=" + encodeURIComponent(id), "memory-out", event.target);
+    };
+    document.querySelector('[data-run="stream"]').onclick = async (event) => {
+      const button = event.target;
+      const out = document.getElementById("stream-out");
+      const message = document.getElementById("stream").value;
+      button.disabled = true;
+      out.textContent = "";
+      try {
+        const response = await fetch("/api/stream?message=" + encodeURIComponent(message));
+        if (!response.ok || !response.body) {
+          out.textContent = response.status + " " + await response.text();
+          return;
+        }
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const chunks = buffer.split("\n\n");
+          buffer = chunks.pop();
+          for (const chunk of chunks) {
+            const line = chunk.split("\n").filter(part => part.startsWith("data:")).map(part => part.slice(5).trim()).join("\n");
+            if (line && line !== "[DONE]") out.textContent += line;
+          }
+        }
+      } catch (error) {
+        out.textContent += "\n" + error;
+      } finally {
+        button.disabled = false;
+      }
+    };
+  </script>
+</body>
+</html>
